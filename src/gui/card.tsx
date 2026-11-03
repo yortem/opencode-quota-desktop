@@ -42,6 +42,7 @@ export function FloatingQuota(props: Props) {
   const [heightFix, setHeightFix] = createSignal(0)
   const [pillElement, setPillElement] = createSignal<HTMLButtonElement>()
   const [pillDrag, setPillDrag] = createSignal<{ x: number; y: number }>()
+  const [refreshing, setRefreshing] = createSignal(false)
   const [now, setNow] = createSignal(Date.now())
   let pillOrigin: { px: number; py: number; x: number; y: number } | undefined
   let pillMoved = false
@@ -204,6 +205,16 @@ export function FloatingQuota(props: Props) {
       ctx.system.openExternal(parsed.toString())
     } catch {
       // A malformed URL is ignored.
+    }
+  }
+
+  // The background poll stays silent; only a click spins the refresh button.
+  const refreshNow = async () => {
+    setRefreshing(true)
+    try {
+      await props.quota.refresh("manual")
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -386,8 +397,8 @@ export function FloatingQuota(props: Props) {
             label={ctx.t("card.refresh")}
             size="small"
             variant="ghost"
-            busy={props.quota.loading()}
-            onClick={() => void props.quota.refresh("manual")}
+            busy={refreshing()}
+            onClick={() => void refreshNow()}
           />
           <ctx.ui.IconButton
             icon="minus"
@@ -425,7 +436,7 @@ export function FloatingQuota(props: Props) {
                     <ctx.ui.Button
                       variant="ghost"
                       size="small"
-                      onClick={() => void props.quota.refresh("manual")}
+                      onClick={() => void refreshNow()}
                     >
                       {ctx.t("card.retry")}
                     </ctx.ui.Button>

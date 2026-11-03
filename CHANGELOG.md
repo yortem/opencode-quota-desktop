@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4 — 2026-11-03
+
+- Reset a stale Quota-pill position saved by the older coupled behavior, so it starts at the bottom-right once after upgrading.
+- The background quota poll no longer spins the refresh button; only a manual refresh does.
+
 ## 0.1.3 — 2026-11-03
 
 - The open card and the minimized Quota pill now keep independent positions.

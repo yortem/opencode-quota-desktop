@@ -47,12 +47,19 @@ export default Plugin.define({
 
     // A save written before the card learned to dock starts at the bottom-right again.
     const dock = ctx.stores.dock
-    if (dock.value.layout < 2) {
+    if (dock.value.layout < 3) {
+      const previous = dock.value.layout
       dock.update((draft) => {
-        draft.layout = 2
-        draft.placed = false
-        draft.x = 0
-        draft.y = 0
+        draft.layout = 3
+        if (previous < 2) {
+          draft.placed = false
+          draft.x = 0
+          draft.y = 0
+        }
+        // 0.1.4: drop a pill position saved by the older coupled behaviour.
+        draft.pillPlaced = false
+        draft.pillX = 0
+        draft.pillY = 0
       })
     }
 
