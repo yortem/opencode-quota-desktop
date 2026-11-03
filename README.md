@@ -18,7 +18,7 @@ A floating, draggable quota card for **OpenCode Desktop**. It reads the quota th
 
    ```jsonc
    {
-     "plugins": ["D:/projects/opencode-quota-desktop"]
+     "plugins": ["C:/path/to/opencode-quota-desktop"]
    }
    ```
 
@@ -67,7 +67,7 @@ Set plugin options in the object form:
 {
   "plugins": [
     {
-      "package": "D:/projects/opencode-quota-desktop",
+      "package": "C:/path/to/opencode-quota-desktop",
       "options": {
         "refreshSeconds": 60
       }

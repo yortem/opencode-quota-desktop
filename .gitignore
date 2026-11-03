@@ -1,3 +1,20 @@
 node_modules/
 *.log
 .DS_Store
+
+# Secrets and local machine state
+.env
+.env.*
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+credentials*
+secrets*
+
+# Editor and build state
+.vscode/
+.idea/
+*.tsbuildinfo

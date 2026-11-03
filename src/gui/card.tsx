@@ -105,7 +105,16 @@ export function FloatingQuota(props: Props) {
 
   // The site's usage page lives one level above its Overview tab.
   const openDashboard = (url: string) => {
-    ctx.system.openExternal(url.replace(/\/overview\/?$/, ""))
+    const target = url.replace(/\/overview\/?$/, "")
+    try {
+      const parsed = new URL(target)
+      const host = parsed.hostname.toLowerCase()
+      // Only the Console's own HTTPS host, never a URL an unexpected server could redirect to.
+      if (parsed.protocol !== "https:" || (host !== "opencode.ai" && !host.endsWith(".opencode.ai"))) return
+      ctx.system.openExternal(parsed.toString())
+    } catch {
+      // A malformed URL is ignored.
+    }
   }
 
   const [dragging, setDragging] = createSignal(false)
