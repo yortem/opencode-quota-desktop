@@ -2,6 +2,8 @@
 
 A floating, draggable quota card for **OpenCode Desktop**. It reads the quota the desktop app's own server reports, so the numbers match the OpenCode Console dashboard: the OpenCode Go 5-hour, weekly and monthly allowances, the Console budgets, and a monthly forecast drawn like the Console usage chart.
 
+[![Latest release](https://img.shields.io/github/v/release/yortem/opencode-quota-desktop?style=flat-square)](https://github.com/yortem/opencode-quota-desktop/releases/latest)
+
 ![The floating quota card with its monthly forecast](screenshot.jpg)
 
 ## Requirements
@@ -12,20 +14,44 @@ A floating, draggable quota card for **OpenCode Desktop**. It reads the quota th
 
 ## Install
 
-1. Keep this folder anywhere on your computer.
-2. Add it to the `plugins` list in your global `opencode.jsonc`
-   (`~/.config/opencode/opencode.jsonc`):
+### 1. Download the plugin
 
-   ```jsonc
-   {
-     "plugins": ["C:/path/to/opencode-quota-desktop"]
-   }
-   ```
+Pick one:
 
-3. Save the file. OpenCode reloads plugins when the config changes; restart Desktop if it does not appear.
-4. **Settings → Extensions → Plugins** lists it. Its switch turns the GUI off without removing the plugin.
+- **Release (recommended):** open [Releases](https://github.com/yortem/opencode-quota-desktop/releases/latest) and download `opencode-quota-desktop-vX.Y.Z.zip`. Extract it; you get a folder named `opencode-quota-desktop`.
+- **Source ZIP:** [download `main.zip`](https://github.com/yortem/opencode-quota-desktop/archive/refs/heads/main.zip) and extract it. The folder is named `opencode-quota-desktop-main`.
+- **Git:**
 
-The built bundle is included in `dist/`, so no build step is needed to use it.
+  ```bash
+  git clone https://github.com/yortem/opencode-quota-desktop.git
+  ```
+
+The folder you point OpenCode at is the one that contains **`package.json`** and **`dist/gui-experimental.cjs`** — not the ZIP, and not the `dist` folder itself. Put it anywhere, for example:
+
+```text
+C:\Users\you\plugins\opencode-quota-desktop
+```
+
+The built bundle is committed, so no `npm install` or build step is needed to use it.
+
+### 2. Point OpenCode at the folder
+
+Add that folder to the `plugins` list in your global `opencode.jsonc`
+(`~/.config/opencode/opencode.jsonc`):
+
+```jsonc
+{
+  "plugins": ["C:/Users/you/plugins/opencode-quota-desktop"]
+}
+```
+
+Use forward slashes in JSON. For the source ZIP, the path ends in `opencode-quota-desktop-main`.
+
+### 3. Reload
+
+Save the file. OpenCode reloads plugins when the config changes; restart Desktop if it does not appear. **Settings → Extensions → Plugins** lists it; the switch turns the GUI off without removing the plugin.
+
+To verify the folder is right: `<folder>\package.json` and `<folder>\dist\gui-experimental.cjs` must exist.
 
 ## Use
 

@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+      - name: Package the plugin
+        run: |
+          mkdir -p release/opencode-quota-desktop
+          cp package.json README.md LICENSE CHANGELOG.md release/opencode-quota-desktop/
+          cp -r dist release/opencode-quota-desktop/
+          cd release
+          zip -r "../opencode-quota-desktop-${GITHUB_REF_NAME}.zip" opencode-quota-desktop
+
+      - name: Create the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opencode-quota-desktop-*.zip
+          generate_release_notes: true

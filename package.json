@@ -4,6 +4,14 @@
   "private": true,
   "description": "A draggable floating window with your OpenCode Go and Console quota in OpenCode Desktop.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yortem/opencode-quota-desktop.git"
+  },
+  "homepage": "https://github.com/yortem/opencode-quota-desktop#readme",
+  "bugs": {
+    "url": "https://github.com/yortem/opencode-quota-desktop/issues"
+  },
   "type": "module",
   "exports": {
     "./gui-experimental": "./dist/gui-experimental.cjs"
