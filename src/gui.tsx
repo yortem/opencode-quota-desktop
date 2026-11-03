@@ -14,6 +14,9 @@ const Dock = Schema.Struct({
   open: Schema.Boolean,
   collapsed: Schema.Boolean,
   forecast: Schema.Boolean,
+  pillX: Schema.Number,
+  pillY: Schema.Number,
+  pillPlaced: Schema.Boolean,
   layout: Schema.Number,
 })
 
@@ -33,6 +36,9 @@ export default Plugin.define({
       open: true,
       collapsed: false,
       forecast: false,
+      pillX: 0,
+      pillY: 0,
+      pillPlaced: false,
       layout: 0,
     }),
   },

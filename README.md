@@ -56,7 +56,7 @@ To verify the folder is right: `<folder>\package.json` and `<folder>\dist\gui-ex
 ## Use
 
 - **Drag the header** to move the card. Its position, open state and forecast state are stored.
-- **Minimize** hides the card to a small **Quota** pill with the monthly percentage, at the same position. Click the pill (or the titlebar pill, `mod+shift+q`, or the command palette) to reopen it exactly there. There is one window button; minimize and close are the same action.
+- **Minimize** hides the card to a small **Quota** pill at the bottom-right with the monthly percentage. Drag the pill anywhere; its position is remembered, and clicking it opens the card there. The titlebar pill, `mod+shift+q`, and the command palette toggle the card too.
 - **Forecast** expands the monthly projection with an animated panel. It shows the current month's used share, when the allowance renews, the pace to renewal, and the same chart the Console usage page draws: the actual line in green, the projection in gold, a hatched projected area, the 100% line, and a 0/50/100/150% axis.
 - The **titlebar pill** shows the highest Go percentage in sight. Click it to show or hide the card.
 - The command palette has:

@@ -40,7 +40,12 @@ export function FloatingQuota(props: Props) {
   const [element, setElement] = createSignal<HTMLDivElement>()
   const [drag, setDrag] = createSignal<{ x: number; y: number }>()
   const [heightFix, setHeightFix] = createSignal(0)
+  const [pillElement, setPillElement] = createSignal<HTMLButtonElement>()
+  const [pillDrag, setPillDrag] = createSignal<{ x: number; y: number }>()
   const [now, setNow] = createSignal(Date.now())
+  let pillOrigin: { px: number; py: number; x: number; y: number } | undefined
+  let pillMoved = false
+  let suppressPillClick = false
 
   const clock = setInterval(() => setNow(Date.now()), 30_000)
   onCleanup(() => clearInterval(clock))
@@ -85,11 +90,116 @@ export function FloatingQuota(props: Props) {
       if (wasPlaced && box) {
         draft.x = box.left
         draft.y = box.top
+        // Once the pill has a custom place, it follows the window when minimized.
+        if (draft.pillPlaced) {
+          draft.pillX = box.left
+          draft.pillY = box.top
+        }
       }
     })
     setHeightFix(0)
     setDrag(undefined)
   }
+
+  const pillPlaced = () => pillDrag() !== undefined || props.dock.value.pillPlaced
+  const launcherPosition = (): JSX.CSSProperties | undefined => {
+    const dragged = pillDrag()
+    if (dragged) return { left: `${dragged.x}px`, top: `${dragged.y}px` }
+    if (props.dock.value.pillPlaced) {
+      return { left: `${props.dock.value.pillX}px`, top: `${props.dock.value.pillY}px` }
+    }
+    return undefined
+  }
+
+  const keepPillOnScreen = () => {
+    if (!props.dock.value.pillPlaced) return
+    const box = pillElement()?.getBoundingClientRect()
+    if (!box) return
+    const minTop = topLimit()
+    const x = clamp(props.dock.value.pillX, 4, Math.max(4, window.innerWidth - box.width - 4))
+    const y = clamp(props.dock.value.pillY, minTop, Math.max(minTop, window.innerHeight - box.height - 4))
+    if (x === props.dock.value.pillX && y === props.dock.value.pillY) return
+    props.dock.update((draft) => {
+      draft.pillX = x
+      draft.pillY = y
+    })
+  }
+
+  const onPillMove = (event: PointerEvent) => {
+    if (!pillOrigin) return
+    const dx = event.clientX - pillOrigin.px
+    const dy = event.clientY - pillOrigin.py
+    if (!pillMoved && Math.abs(dx) + Math.abs(dy) < 3) return
+    pillMoved = true
+    const box = pillElement()?.getBoundingClientRect()
+    const width = box?.width ?? 110
+    const height = box?.height ?? 30
+    const minTop = topLimit()
+    const x = clamp(pillOrigin.x + dx, 4, Math.max(4, window.innerWidth - width - 4))
+    const y = clamp(pillOrigin.y + dy, minTop, Math.max(minTop, window.innerHeight - height - 4))
+    setPillDrag({ x, y })
+  }
+
+  const onPillUp = () => {
+    if (!pillOrigin) return
+    pillOrigin = undefined
+    window.removeEventListener("pointermove", onPillMove)
+    window.removeEventListener("pointerup", onPillUp)
+    window.removeEventListener("pointercancel", onPillUp)
+    const next = pillDrag()
+    const moved = pillMoved
+    pillMoved = false
+    setPillDrag(undefined)
+    if (!moved || !next) return
+    props.dock.update((draft) => {
+      draft.pillX = next.x
+      draft.pillY = next.y
+      draft.pillPlaced = true
+    })
+    // The click after this pointerup belongs to the drag, not to opening the card.
+    suppressPillClick = true
+    window.setTimeout(() => {
+      suppressPillClick = false
+    }, 0)
+  }
+
+  const onPillDown = (event: PointerEvent) => {
+    if (event.button !== 0) return
+    const box = pillElement()?.getBoundingClientRect()
+    if (!box) return
+    pillOrigin = { px: event.clientX, py: event.clientY, x: box.left, y: box.top }
+    pillMoved = false
+    setPillDrag({ x: box.left, y: box.top })
+    window.addEventListener("pointermove", onPillMove)
+    window.addEventListener("pointerup", onPillUp)
+    window.addEventListener("pointercancel", onPillUp)
+  }
+
+  const openFromPill = () => {
+    if (suppressPillClick) {
+      suppressPillClick = false
+      return
+    }
+    props.dock.update((draft) => {
+      draft.open = true
+      if (draft.pillPlaced) {
+        draft.x = draft.pillX
+        draft.y = draft.pillY
+        draft.placed = true
+      }
+    })
+  }
+
+  const attachPill = (node: HTMLButtonElement) => {
+    setPillElement(node)
+    if (node) requestAnimationFrame(keepPillOnScreen)
+  }
+
+  onCleanup(() => {
+    window.removeEventListener("pointermove", onPillMove)
+    window.removeEventListener("pointerup", onPillUp)
+    window.removeEventListener("pointercancel", onPillUp)
+  })
 
   // The site's usage page lives one level above its Overview tab.
   const openDashboard = (url: string) => {
@@ -176,25 +286,35 @@ export function FloatingQuota(props: Props) {
   // Keep a card that the user placed fully on screen as it grows, so the forecast never opens below the display.
   // A card in the lower half keeps its bottom edge; one in the upper half keeps its top edge.
   let lastHeight = 0
+  let initializing = true
+  let initFrame: number | undefined
+
   const keepOnScreen = () => {
     const box = element()?.getBoundingClientRect()
     if (!box) return
     const height = box.height
-    if (!props.dock.value.placed) {
-      setHeightFix(0)
-      lastHeight = height
-      return
-    }
     const margin = 4
     const minTop = topLimit()
     const maxTop = Math.max(minTop, window.innerHeight - margin - height)
     const currentTop = box.top
-    const bottomAnchored = props.dock.value.y > window.innerHeight * 0.35
-    const desired =
-      lastHeight === 0 || !bottomAnchored ? currentTop : currentTop + (lastHeight - height)
-    const top = clamp(desired, minTop, maxTop)
-    setHeightFix(top - props.dock.value.y)
-    lastHeight = height
+
+    if (!props.dock.value.placed) {
+      setHeightFix(0)
+      if (!initializing) lastHeight = height
+    } else if (initializing || lastHeight === 0) {
+      // The first layout after opening: keep the position it had and only move it enough to fit.
+      const top = clamp(currentTop, minTop, maxTop)
+      setHeightFix(top - props.dock.value.y)
+      if (!initializing) lastHeight = height
+    } else {
+      // A real size change: a lower card keeps its bottom edge, an upper card its top edge.
+      const bottomAnchored = props.dock.value.y > window.innerHeight * 0.35
+      const desired = bottomAnchored ? currentTop + (lastHeight - height) : currentTop
+      const top = clamp(desired, minTop, maxTop)
+      setHeightFix(top - props.dock.value.y)
+      lastHeight = height
+    }
+
     const left = clamp(props.dock.value.x, margin, Math.max(margin, window.innerWidth - box.width - margin))
     if (left !== props.dock.value.x) {
       props.dock.update((draft) => {
@@ -210,19 +330,35 @@ export function FloatingQuota(props: Props) {
     setElement(node)
     observer?.disconnect()
     observer = undefined
+    if (initFrame !== undefined) cancelAnimationFrame(initFrame)
+    initFrame = undefined
     if (!node) return
+
     lastHeight = 0
+    initializing = true
     setHeightFix(0)
     observer = new ResizeObserver(() => keepOnScreen())
     observer.observe(node)
+
+    // Let the first paint measure the whole card, not just the header, before anchoring to its size.
+    initFrame = requestAnimationFrame(() => {
+      initFrame = undefined
+      initializing = false
+      keepOnScreen()
+    })
+  }
+
+  const onResize = () => {
     keepOnScreen()
+    keepPillOnScreen()
   }
 
   onMount(() => {
-    window.addEventListener("resize", keepOnScreen)
+    window.addEventListener("resize", onResize)
     onCleanup(() => {
-      window.removeEventListener("resize", keepOnScreen)
+      window.removeEventListener("resize", onResize)
       observer?.disconnect()
+      if (initFrame !== undefined) cancelAnimationFrame(initFrame)
     })
   })
 
@@ -325,17 +461,17 @@ export function FloatingQuota(props: Props) {
 
     <Show when={!open()}>
       <button
+        ref={attachPill}
         type="button"
-        class="oq-launcher oq-launcher-dock"
+        class="oq-launcher"
+        classList={{ "oq-launcher-dock": !pillPlaced() }}
         data-mode={ctx.appearance.mode()}
         dir={ctx.locale.direction()}
+        style={launcherPosition()}
         aria-label={ctx.t("card.launcher.open")}
         title={ctx.t("card.launcher.open")}
-        onClick={() => {
-          props.dock.update((draft) => {
-            draft.open = true
-          })
-        }}
+        onPointerDown={onPillDown}
+        onClick={openFromPill}
       >
         <span class="oq-dot" data-tone={tone()} />
         <span>{ctx.t("card.launcher")}</span>

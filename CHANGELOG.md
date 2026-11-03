@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 — 2026-11-03
+
+- Fixed the card jumping upward when it was reopened after minimize.
+- The minimized Quota pill can be dragged; its position is remembered and the card opens there.
+- The Quota pill still starts at the bottom-right.
+
 ## 0.1.1 — 2026-11-03
 
 - One window button: minimize now remembers the exact position and reopens from the Quota pill there.

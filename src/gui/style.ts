@@ -57,10 +57,17 @@ export const STYLE = `
   box-shadow: var(--v2-elevation-floating, 0 10px 30px rgba(0, 0, 0, 0.28));
   font: inherit;
   font-size: 11px;
-  cursor: pointer;
+  cursor: grab;
   pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
   -webkit-app-region: no-drag;
   app-region: no-drag;
+}
+
+.oq-launcher:active {
+  cursor: grabbing;
 }
 
 .oq-launcher[data-mode="dark"] {

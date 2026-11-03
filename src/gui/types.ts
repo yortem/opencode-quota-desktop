@@ -14,6 +14,10 @@ export type DockState = {
   open: boolean
   collapsed: boolean
   forecast: boolean
+  /** The minimized Quota pill's own position. */
+  pillX: number
+  pillY: number
+  pillPlaced: boolean
   /** Layout revision, used to move older saves to the bottom-right dock once. */
   layout: number
 }

@@ -20,7 +20,7 @@ export const en = {
   "card.updated": "Updated {{time}}",
   "card.openDashboard": "Open dashboard",
   "card.launcher": "Quota",
-  "card.launcher.open": "Show the quota window",
+  "card.launcher.open": "Open the quota window (drag to move)",
   "card.forecast": "Forecast",
   "card.forecast.show": "Show forecast",
   "card.forecast.hide": "Hide forecast",
