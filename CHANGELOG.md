@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 — 2026-11-03
+
+- The open card and the minimized Quota pill now keep independent positions.
+- Dragging one no longer moves the other; minimizing shows the pill where it was dragged, and opening shows the card where it was dragged.
+
 ## 0.1.2 — 2026-11-03
 
 - Fixed the card jumping upward when it was reopened after minimize.

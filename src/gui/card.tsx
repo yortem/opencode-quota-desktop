@@ -90,12 +90,8 @@ export function FloatingQuota(props: Props) {
       if (wasPlaced && box) {
         draft.x = box.left
         draft.y = box.top
-        // Once the pill has a custom place, it follows the window when minimized.
-        if (draft.pillPlaced) {
-          draft.pillX = box.left
-          draft.pillY = box.top
-        }
       }
+      // The pill has its own place; minimizing never moves it.
     })
     setHeightFix(0)
     setDrag(undefined)
@@ -182,11 +178,7 @@ export function FloatingQuota(props: Props) {
     }
     props.dock.update((draft) => {
       draft.open = true
-      if (draft.pillPlaced) {
-        draft.x = draft.pillX
-        draft.y = draft.pillY
-        draft.placed = true
-      }
+      // The card keeps its own place; the pill's place is separate.
     })
   }
 
