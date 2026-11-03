@@ -46,8 +46,6 @@ export const STYLE = `
   --oq-danger: #ef4444;
   position: fixed;
   z-index: 120;
-  inset-inline-end: 20px;
-  bottom: 20px;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -75,6 +73,11 @@ export const STYLE = `
 
 .oq-launcher:hover {
   background: var(--oq-raised);
+}
+
+.oq-launcher.oq-launcher-dock {
+  inset-inline-end: 20px;
+  bottom: 20px;
 }
 
 .oq-launcher-value {
@@ -308,25 +311,6 @@ export const STYLE = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.oq-fold {
-  display: grid;
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transition:
-    grid-template-rows 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 180ms ease;
-}
-
-.oq-fold[data-collapsed="true"] {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-.oq-fold-inner {
-  min-height: 0;
-  overflow: hidden;
 }
 
 .oq-fc-toggle {

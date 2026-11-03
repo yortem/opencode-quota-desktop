@@ -1,6 +1,6 @@
 {
   "name": "opencode-quota-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A draggable floating window with your OpenCode Go and Console quota in OpenCode Desktop.",
   "license": "MIT",

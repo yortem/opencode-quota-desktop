@@ -35,9 +35,7 @@ export const en = {
   "card.forecast.now": "Now",
   "card.forecast.empty": "Not enough usage yet to project.",
   "card.refresh": "Refresh quota",
-  "card.collapse": "Collapse",
-  "card.expand": "Expand",
-  "card.close": "Hide quota window",
+  "card.minimize": "Minimize quota window",
   "command.toggle": "Quota: Show or hide the floating window",
   "command.toggle.description": "OpenCode Go and Console quota in a draggable window",
   "command.refresh": "Quota: Refresh now",
@@ -47,7 +45,4 @@ export const en = {
   "titlebar.title": "Quota: {{text}}",
   "toast.refreshed": "Quota refreshed",
   "toast.error": "Could not refresh the quota",
-  "toast.hidden": "Quota hidden",
-  "toast.hidden.description": "Click the Quota pill at the bottom-right to open it again.",
-  "toast.hidden.show": "Show",
 } as const

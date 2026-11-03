@@ -11,7 +11,6 @@ import {
   shortMoment,
   timeOnly,
   toneOf,
-  topPercent,
 } from "./format"
 import { forecastOf, forecastTone, type Forecast } from "./forecast"
 import type { QuotaStore } from "./quota"
@@ -49,16 +48,15 @@ export function FloatingQuota(props: Props) {
   let origin: { px: number; py: number; x: number; y: number } | undefined
 
   const open = () => props.dock.value.open
-  const collapsed = () => props.dock.value.collapsed
   const info = () => props.quota.data()
   const tone = (): Tone => {
     const shown = info()
     if (shown) return toneOf(shown)
     return props.quota.error() && shown === undefined ? "danger" : "ok"
   }
-  const top = () => {
+  const month = () => {
     const shown = info()
-    return shown ? topPercent(shown) : undefined
+    return shown?.go?.monthly.percent
   }
 
   const placed = () => drag() !== undefined || props.dock.value.placed
@@ -71,36 +69,26 @@ export function FloatingQuota(props: Props) {
     return undefined
   }
 
-  const toggleCollapsed = () => {
-    props.dock.update((draft) => {
-      draft.collapsed = !draft.collapsed
-    })
-  }
-
   const toggleForecast = () => {
     props.dock.update((draft) => {
       draft.forecast = !draft.forecast
     })
   }
 
-  const close = () => {
+  const minimize = () => {
+    const box = element()?.getBoundingClientRect()
+    const wasPlaced = props.dock.value.placed
+
     props.dock.update((draft) => {
       draft.open = false
+      // Keep the visible top-left, not the base top that the anchor may have shifted.
+      if (wasPlaced && box) {
+        draft.x = box.left
+        draft.y = box.top
+      }
     })
-    ctx.toast.show({
-      title: ctx.t("toast.hidden"),
-      description: ctx.t("toast.hidden.description"),
-      actions: [
-        {
-          label: ctx.t("toast.hidden.show"),
-          run: () => {
-            props.dock.update((draft) => {
-              draft.open = true
-            })
-          },
-        },
-      ],
-    })
+    setHeightFix(0)
+    setDrag(undefined)
   }
 
   // The site's usage page lives one level above its Overview tab.
@@ -224,6 +212,7 @@ export function FloatingQuota(props: Props) {
     observer = undefined
     if (!node) return
     lastHeight = 0
+    setHeightFix(0)
     observer = new ResizeObserver(() => keepOnScreen())
     observer.observe(node)
     keepOnScreen()
@@ -250,7 +239,6 @@ export function FloatingQuota(props: Props) {
         class="oq-floating"
         classList={{ "oq-dock": !placed() }}
         data-mode={ctx.appearance.mode()}
-        data-collapsed={collapsed() ? "true" : "false"}
         dir={ctx.locale.direction()}
         style={position()}
       >
@@ -274,24 +262,15 @@ export function FloatingQuota(props: Props) {
             onClick={() => void props.quota.refresh("manual")}
           />
           <ctx.ui.IconButton
-            icon={collapsed() ? "plus" : "minus"}
-            label={ctx.t(collapsed() ? "card.expand" : "card.collapse")}
+            icon="minus"
+            label={ctx.t("card.minimize")}
             size="small"
             variant="ghost"
-            onClick={toggleCollapsed}
-          />
-          <ctx.ui.IconButton
-            icon="close"
-            label={ctx.t("card.close")}
-            size="small"
-            variant="ghost"
-            onClick={close}
+            onClick={minimize}
           />
         </header>
 
-        <div class="oq-fold" data-collapsed={collapsed() ? "true" : "false"}>
-          <div class="oq-fold-inner">
-            <div class="oq-body">
+        <div class="oq-body">
               {info() === undefined ? (
                 <div class="oq-state oq-inline">
                   <ctx.ui.Loader size="small" />
@@ -341,15 +320,13 @@ export function FloatingQuota(props: Props) {
                 </footer>
               )}
             </Show>
-          </div>
-        </div>
       </div>
     </Show>
 
     <Show when={!open()}>
       <button
         type="button"
-        class="oq-launcher"
+        class="oq-launcher oq-launcher-dock"
         data-mode={ctx.appearance.mode()}
         dir={ctx.locale.direction()}
         aria-label={ctx.t("card.launcher.open")}
@@ -362,8 +339,8 @@ export function FloatingQuota(props: Props) {
       >
         <span class="oq-dot" data-tone={tone()} />
         <span>{ctx.t("card.launcher")}</span>
-        <Show when={top() !== undefined}>
-          <span class="oq-launcher-value">{top()}%</span>
+        <Show when={month() !== undefined}>
+          <span class="oq-launcher-value">{Math.round(month()!)}%</span>
         </Show>
       </button>
     </Show>
@@ -477,7 +454,6 @@ function ForecastSection(props: {
         aria-label={ctx.t(props.open ? "card.forecast.hide" : "card.forecast.show")}
         onClick={props.toggle}
       >
-        <ctx.ui.Icon name="window-analytics" size="small" />
         <span class="oq-fc-toggle-label">{ctx.t("card.forecast")}</span>
         <span class="oq-fc-toggle-summary">{summary()}</span>
         <ctx.ui.Icon

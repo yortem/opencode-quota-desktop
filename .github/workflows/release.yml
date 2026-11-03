@@ -26,7 +26,7 @@ jobs:
       - name: Package the plugin
         run: |
           mkdir -p release/opencode-quota-desktop
-          cp package.json README.md LICENSE CHANGELOG.md release/opencode-quota-desktop/
+          cp package.json README.md LICENSE CHANGELOG.md screenshot.jpg release/opencode-quota-desktop/
           cp -r dist release/opencode-quota-desktop/
           cd release
           zip -r "../opencode-quota-desktop-${GITHUB_REF_NAME}.zip" opencode-quota-desktop
